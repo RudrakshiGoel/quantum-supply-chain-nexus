@@ -6,49 +6,53 @@ const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-interface ConfirmationEmailRequest {
+interface ContactEmailRequest {
   name: string;
   email: string;
 }
 
-serve(async (req: Request): Promise<Response> => {
-  // Handle CORS preflight
+const handler = async (req: Request): Promise<Response> => {
+  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { name, email }: ConfirmationEmailRequest = await req.json();
+    const { name, email }: ContactEmailRequest = await req.json();
 
-    const subject = "Confirm your Quantum Supply Chain profile signup";
-    const html = `
-      <h2>Welcome to Quantum Supply Chain Platform!</h2>
-      <p>Hello <strong>${name}</strong>,</p>
-      <p>Thank you for signing up. Please confirm your email by clicking the link in the email you received from us.</p>
-      <p>If you have questions, just reply to this email.</p>
-      <hr>
-      <p><small>You received this because someone (hopefully you) signed up on our platform.</small></p>
-    `;
-
-    const data = await resend.emails.send({
-      from: "Quantum Supply Chain <onboarding@resend.dev>",
+    const emailResponse = await resend.emails.send({
+      from: "Lovable <onboarding@resend.dev>",
       to: [email],
-      subject,
-      html,
+      subject: "We received your message!",
+      html: `
+        <h1>Thank you for contacting us, ${name}!</h1>
+        <p>We have received your message and will get back to you as soon as possible.</p>
+        <p>Best regards,<br>The Lovable Team</p>
+      `,
     });
 
-    return new Response(JSON.stringify({ success: true }), {
+    console.log("Email sent successfully:", emailResponse);
+
+    return new Response(JSON.stringify(emailResponse), {
       status: 200,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...corsHeaders,
+      },
     });
   } catch (error: any) {
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    console.error("Error in send-confirmation function:", error);
+    return new Response(
+      JSON.stringify({ error: error.message }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      }
+    );
   }
-});
+};
+
+serve(handler);
