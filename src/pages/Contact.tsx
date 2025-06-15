@@ -6,6 +6,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { toast } from "@/hooks/use-toast";
 
 const HIGHLIGHTS_OPTIONS = [
   "Supply Chain Optimization",
@@ -17,6 +18,12 @@ const HIGHLIGHTS_OPTIONS = [
   "Cost Reduction Initiatives",
   "Process Automation",
 ];
+
+function isValidPassword(password: string): boolean {
+  // Exactly 9 characters, at least 1 uppercase, 1 lowercase, and 1 special character
+  const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[\W_])[A-Za-z\d\W_]{9}$/;
+  return regex.test(password);
+}
 
 export default function Contact() {
   const [success, setSuccess] = useState(false);
@@ -46,21 +53,33 @@ export default function Contact() {
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (password !== "demo2025") {
+    if (!isValidPassword(password)) {
       setShowPassword(true);
+      toast({
+        title: "Invalid Password",
+        description: "Password must be 9 characters, include 1 uppercase, 1 lowercase, and 1 special character.",
+        variant: "destructive"
+      });
       return;
     }
+
+    // Both modes: demo is booked as soon as profile is created
     if (mode === "profile") {
-      window.localStorage.setItem(
-        "profileData",
-        JSON.stringify(form)
-      );
+      window.localStorage.setItem("profileData", JSON.stringify(form));
+
+      // Simulate sending an email to the registered address (user.form.email)
+      toast({
+        title: "Portfolio Sent!",
+        description: `Your profile was sent to ${form.email} (demo only).`,
+      });
+
       setSuccess(true);
       setTimeout(() => {
         setSuccess(false);
-        navigate("/profile");
+        navigate("/confirmation");
       }, 1200);
     } else {
+      // Only booking demo
       setSuccess(true);
       setTimeout(() => {
         setSuccess(false);
@@ -175,9 +194,9 @@ export default function Contact() {
             value={password}
             onChange={e => setPassword(e.target.value)}
           />
-          {showPassword && password !== "demo2025" && (
+          {showPassword && !isValidPassword(password) && (
             <div className="text-sm text-red-300 animate-fade-in">
-              Incorrect password. Try <b>demo2025</b> for demo access.
+              Invalid password. Must be 9 characters, including uppercase, lowercase, and a special character.
             </div>
           )}
           <button
@@ -185,7 +204,7 @@ export default function Contact() {
             disabled={!mode || success || (mode === "profile" && form.highlights.length === 0)}
             className={`bg-blue-700 px-7 py-3 rounded-full text-white shadow font-semibold hover:bg-blue-900 transition mt-1 ${!mode || (mode === "profile" && form.highlights.length === 0) ? "opacity-60 cursor-not-allowed" : ""}`}
           >
-            {mode === "profile" ? "Create My Portfolio" : "Schedule a Demo"}
+            {mode === "profile" ? "Create My Portfolio & Book Demo" : "Schedule a Demo"}
           </button>
           <div className="text-xs opacity-60 mt-2">We respect your privacy. Your info is never shared.</div>
         </form>
@@ -201,7 +220,7 @@ export default function Contact() {
           </div>
           {success && (
             <div className="mt-4 py-3 px-6 rounded-xl bg-green-900/80 text-green-200 shadow animate-fade-in">
-              Thank you! {mode === "profile" ? "Your profile was created." : "Your request was received."} Redirecting...
+              Thank you! {mode === "profile" ? "Your profile was created and demo booked." : "Your request was received."} Redirecting...
             </div>
           )}
         </div>
@@ -210,3 +229,4 @@ export default function Contact() {
     </div>
   );
 }
+
