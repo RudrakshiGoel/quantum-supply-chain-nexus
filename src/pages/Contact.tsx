@@ -4,23 +4,45 @@ import FuturisticBackground from "@/components/FuturisticBackground";
 import Footer from "@/components/Footer";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+
+const HIGHLIGHTS_OPTIONS = [
+  "Supply Chain Optimization",
+  "Quantum Computing Projects",
+  "Industry Award",
+  "Certified SCM Professional",
+  "Experience with Large Datasets",
+  "Implementation of AI/ML",
+  "Cost Reduction Initiatives",
+  "Process Automation",
+];
 
 export default function Contact() {
   const [success, setSuccess] = useState(false);
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [mode, setMode] = useState<"profile" | "demo" | null>(null); // Option: create profile OR request demo
+  const [mode, setMode] = useState<"profile" | "demo" | null>(null);
 
   const [form, setForm] = useState({
     name: "",
     company: "",
     email: "",
     message: "",
-    highlights: "",
+    highlights: [] as string[],
     about: ""
   });
 
   const navigate = useNavigate();
+
+  function handleHighlightToggle(item: string) {
+    setForm(f => ({
+      ...f,
+      highlights: f.highlights.includes(item)
+        ? f.highlights.filter(i => i !== item)
+        : [...f.highlights, item]
+    }));
+  }
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -29,8 +51,10 @@ export default function Contact() {
       return;
     }
     if (mode === "profile") {
-      // Save profile to localstorage
-      window.localStorage.setItem("profileData", JSON.stringify(form));
+      window.localStorage.setItem(
+        "profileData",
+        JSON.stringify(form)
+      );
       setSuccess(true);
       setTimeout(() => {
         setSuccess(false);
@@ -121,16 +145,25 @@ export default function Contact() {
                 value={form.about}
                 onChange={e => setForm(f => ({ ...f, about: e.target.value }))}
               />
-              <textarea
-                required
-                name="highlights"
-                rows={2}
-                disabled={success}
-                className="rounded px-4 py-3 bg-blue-900/70 border border-blue-600 text-white outline-none focus:ring-2 focus:ring-blue-300"
-                placeholder="Portfolio Highlights (awards, skills, projects)"
-                value={form.highlights}
-                onChange={e => setForm(f => ({ ...f, highlights: e.target.value }))}
-              />
+              <div>
+                <Label className="text-blue-100 mb-2 block font-semibold">Portfolio Highlights</Label>
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 mb-2">
+                  {HIGHLIGHTS_OPTIONS.map(option => (
+                    <label key={option} className="flex items-center gap-2 bg-blue-900/50 rounded px-2 py-1 hover:bg-blue-900/70 transition cursor-pointer">
+                      <Checkbox
+                        checked={form.highlights.includes(option)}
+                        onCheckedChange={() => handleHighlightToggle(option)}
+                        disabled={success}
+                        id={option}
+                      />
+                      <span className="text-blue-50 text-sm">{option}</span>
+                    </label>
+                  ))}
+                </div>
+                {form.highlights.length === 0 && (
+                  <div className="text-xs text-blue-400">Select at least one highlight to showcase your profile.</div>
+                )}
+              </div>
             </>
           )}
           <input
@@ -149,8 +182,8 @@ export default function Contact() {
           )}
           <button
             type="submit"
-            disabled={!mode || success}
-            className={`bg-blue-700 px-7 py-3 rounded-full text-white shadow font-semibold hover:bg-blue-900 transition mt-1 ${!mode ? "opacity-60 cursor-not-allowed" : ""}`}
+            disabled={!mode || success || (mode === "profile" && form.highlights.length === 0)}
+            className={`bg-blue-700 px-7 py-3 rounded-full text-white shadow font-semibold hover:bg-blue-900 transition mt-1 ${!mode || (mode === "profile" && form.highlights.length === 0) ? "opacity-60 cursor-not-allowed" : ""}`}
           >
             {mode === "profile" ? "Create My Portfolio" : "Schedule a Demo"}
           </button>

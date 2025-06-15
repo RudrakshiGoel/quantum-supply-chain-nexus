@@ -10,7 +10,7 @@ type ProfileData = {
   company: string;
   email: string;
   message: string;
-  highlights: string;
+  highlights: string[]; // changed to array of string
   about: string;
 };
 
@@ -69,7 +69,15 @@ export default function Profile() {
           </div>
           <div className="mb-4">
             <span className="block text-blue-100 font-semibold">Portfolio Highlights:</span>
-            <span className="block text-blue-300">{profile.highlights}</span>
+            <div className="flex flex-wrap gap-2 mt-1">
+              {(profile.highlights && profile.highlights.length > 0) ? (
+                profile.highlights.map((item, i) => (
+                  <span key={i} className="bg-blue-700/80 px-3 py-1 rounded-full text-blue-50 text-xs font-semibold shadow border border-blue-600">{item}</span>
+                ))
+              ) : (
+                <span className="block text-blue-300">No highlights selected.</span>
+              )}
+            </div>
           </div>
           <div>
             <span className="block text-blue-100 font-semibold">Message (Interests):</span>
