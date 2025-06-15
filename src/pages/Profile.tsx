@@ -1,4 +1,3 @@
-
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import FuturisticBackground from "@/components/FuturisticBackground";
@@ -85,8 +84,10 @@ export default function Profile() {
           </div>
         </section>
         <div className="flex gap-4">
-          <button className="bg-blue-700 text-white rounded-full px-8 py-3 font-semibold hover:bg-blue-900"
-           onClick={()=>navigate("/contact")}>
+          <button
+            className="bg-blue-700 text-white rounded-full px-8 py-3 font-semibold hover:bg-blue-900"
+            onClick={() => navigate("/contact?mode=demo")}
+          >
             Request Demo
           </button>
         </div>
