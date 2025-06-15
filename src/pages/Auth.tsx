@@ -2,134 +2,168 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { toast } from "@/components/ui/use-toast";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { toast } from "@/hooks/use-toast";
 
-export default function Auth() {
+type AuthMode = "login" | "signup";
+
+const Auth = () => {
+  const [mode, setMode] = useState<AuthMode>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [confirmationSent, setConfirmationSent] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session) {
+    // If already logged in, redirect to main page
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session) navigate("/");
+    });
+    // eslint-disable-next-line
+  }, []);
+
+  const handleAuth = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setErrorMessage("");
+
+    if (mode === "signup") {
+      // Sign Up
+      const redirectUrl = `${window.location.origin}/auth?mode=confirmed`;
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: redirectUrl,
+          data: { full_name: fullName }
+        }
+      });
+      if (error) {
+        setErrorMessage(error.message);
+        setLoading(false);
+        return;
+      }
+      // Send confirmation email through edge function (simulate welcome)
+      try {
+        await fetch(
+          `https://gwdxcabvqhhyvqkgcshf.functions.supabase.co/send-confirmation`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              name: fullName || email,
+              email
+            })
+          }
+        );
+      } catch {
+        // ignore email errors for now
+      }
+      setConfirmationSent(true);
+      toast({
+        title: "Confirm your email",
+        description: "A confirmation email has been sent. Check your inbox.",
+      });
+      setLoading(false);
+    } else {
+      // Login
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        setErrorMessage(error.message);
+      } else {
         navigate("/");
       }
-    });
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) navigate("/");
-    });
-    return () => subscription.unsubscribe();
-  }, [navigate]);
-
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) {
-      setError(error.message);
-    } else {
-      toast({ title: "Login successful!" });
-      navigate("/");
+      setLoading(false);
     }
-    setLoading(false);
-  };
-
-  const handleSignUp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-
-    const redirectUrl = `${window.location.origin}/`;
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: redirectUrl,
-      }
-    });
-    if (error) {
-      setError(error.message);
-    } else {
-      toast({ title: "Sign up email sent!" });
-    }
-    setLoading(false);
-  };
-
-  const handleOAuth = async (provider: "google" | "github") => {
-    setLoading(true);
-    setError(null);
-    const redirectUrl = `${window.location.origin}/`;
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider,
-      options: { redirectTo: redirectUrl }
-    });
-    if (error) setError(error.message);
-    setLoading(false);
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-900 to-blue-900">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle className="text-center">Welcome Back</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form className="space-y-4" onSubmit={handleLogin}>
-            <input
+    <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-b from-[#161d31] to-black px-3">
+      <div className="w-full max-w-md bg-blue-950/80 border border-blue-800 rounded-2xl shadow-lg p-10 z-10">
+        <h1 className="font-display text-2xl mb-6 text-blue-100 text-center">
+          {mode === "login" ? "Login to Your Account" : "Create Your Account"}
+        </h1>
+        {confirmationSent ? (
+          <div className="text-center text-blue-200 mb-4">
+            Please check your email to confirm your account!
+          </div>
+        ) : (
+          <form className="flex flex-col gap-5" onSubmit={handleAuth}>
+            {mode === "signup" && (
+              <>
+                <Label htmlFor="fullname" className="text-blue-100">
+                  Full Name
+                </Label>
+                <Input
+                  id="fullname"
+                  placeholder="Full Name"
+                  value={fullName}
+                  onChange={e => setFullName(e.target.value)}
+                  required
+                  disabled={loading}
+                />
+              </>
+            )}
+            <Label htmlFor="email" className="text-blue-100">
+              Email
+            </Label>
+            <Input
+              id="email"
               type="email"
-              placeholder="Email"
-              required
-              autoFocus
+              placeholder="Email address"
               value={email}
+              autoComplete="email"
               onChange={e => setEmail(e.target.value)}
-              className="w-full px-3 py-2 rounded border bg-background mb-2"
+              required
+              disabled={loading}
             />
-            <input
+            <Label htmlFor="password" className="text-blue-100">
+              Password
+            </Label>
+            <Input
+              id="password"
               type="password"
               placeholder="Password"
-              required
               value={password}
+              autoComplete={mode === "login" ? "current-password" : "new-password"}
               onChange={e => setPassword(e.target.value)}
-              className="w-full px-3 py-2 rounded border bg-background mb-2"
+              required
+              disabled={loading}
             />
-            <Button type="submit" className="w-full" disabled={loading}>
-              Log In
-            </Button>
-          </form>
-          <form className="space-y-4 mt-3" onSubmit={handleSignUp}>
-            <Button type="submit" className="w-full" variant="secondary" disabled={loading}>
-              Sign Up
-            </Button>
-          </form>
-          <div className="flex flex-col gap-2 mt-5">
-            <Button
-              type="button"
-              className="w-full"
-              onClick={() => handleOAuth("google")}
-              variant="outline"
+            {errorMessage && (
+              <div className="text-red-400 text-sm text-center">{errorMessage}</div>
+            )}
+            <button
+              type="submit"
               disabled={loading}
+              className="bg-blue-700 rounded-full py-3 font-semibold text-white mt-2 hover:bg-blue-900 transition"
             >
-              Sign in with Google
-            </Button>
-            <Button
-              type="button"
-              className="w-full"
-              onClick={() => handleOAuth("github")}
-              variant="outline"
-              disabled={loading}
-            >
-              Sign in with GitHub
-            </Button>
-          </div>
-          {error && <p className="text-red-600 mt-2 text-center">{error}</p>}
-        </CardContent>
-      </Card>
+              {loading ? "Loading..." : mode === "login" ? "Login" : "Sign Up"}
+            </button>
+          </form>
+        )}
+        <div className="flex justify-center gap-4 mt-8">
+          <button
+            disabled={loading}
+            className="text-blue-400 hover:underline"
+            onClick={() => {
+              setMode(mode === "login" ? "signup" : "login");
+              setErrorMessage("");
+              setConfirmationSent(false);
+            }}
+          >
+            {mode === "login"
+              ? "New here? Sign Up"
+              : "Have an account? Login"}
+          </button>
+        </div>
+      </div>
     </div>
   );
-}
+};
+
+export default Auth;

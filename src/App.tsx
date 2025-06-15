@@ -14,8 +14,6 @@ import Confirmation from "./pages/Confirmation";
 import Profile from "./pages/Profile";
 import CreateProfile from "./pages/CreateProfile";
 import Auth from "./pages/Auth";
-import Announcements from "./pages/Announcements";
-import AIChat from "./pages/AIChat";
 
 const queryClient = new QueryClient();
 
@@ -35,8 +33,6 @@ const App = () => (
           <Route path="/confirmation" element={<Confirmation />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/create-profile" element={<CreateProfile />} />
-          <Route path="/announcements" element={<Announcements />} />
-          <Route path="/ai-chat" element={<AIChat />} />
           <Route path="/auth" element={<Auth />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
