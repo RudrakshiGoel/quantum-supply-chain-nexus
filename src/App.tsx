@@ -13,6 +13,7 @@ import Blog from "./pages/Blog";
 import Confirmation from "./pages/Confirmation";
 import Profile from "./pages/Profile";
 import CreateProfile from "./pages/CreateProfile";
+import Auth from "./pages/Auth";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +33,7 @@ const App = () => (
           <Route path="/confirmation" element={<Confirmation />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/create-profile" element={<CreateProfile />} />
+          <Route path="/auth" element={<Auth />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
