@@ -12,6 +12,7 @@ const corsHeaders = {
 interface ContactEmailRequest {
   name: string;
   email: string;
+  message?: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -21,7 +22,7 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { name, email }: ContactEmailRequest = await req.json();
+    const { name, email, message }: ContactEmailRequest = await req.json();
 
     const emailResponse = await resend.emails.send({
       from: "Lovable <onboarding@resend.dev>",
@@ -30,6 +31,11 @@ const handler = async (req: Request): Promise<Response> => {
       html: `
         <h1>Thank you for contacting us, ${name}!</h1>
         <p>We have received your message and will get back to you as soon as possible.</p>
+        ${
+          message
+            ? `<div style="margin-top:1em"><strong>Your message:</strong><br/><pre style="background:#f5f5fa;padding:10px;border-radius:4px">${message}</pre></div>`
+            : ""
+        }
         <p>Best regards,<br>The Lovable Team</p>
       `,
     });
@@ -56,3 +62,4 @@ const handler = async (req: Request): Promise<Response> => {
 };
 
 serve(handler);
+

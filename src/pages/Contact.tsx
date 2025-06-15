@@ -14,13 +14,16 @@ export default function Contact() {
     e.preventDefault();
     setLoading(true);
 
-    // Send email using the resend edge function
     try {
-      const res = await fetch("/functions/send-confirmation", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email }),
-      });
+      // Always use the full URL for Supabase Edge Functions
+      const res = await fetch(
+        `https://gwdxcabvqhhyvqkgcshf.functions.supabase.co/send-confirmation`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, email, message }),
+        }
+      );
       if (!res.ok) {
         throw new Error("Sending email failed");
       }
@@ -31,7 +34,6 @@ export default function Contact() {
     } catch (e: any) {
       toast({ title: "Error", description: e.message });
     }
-
     setLoading(false);
   }
 
