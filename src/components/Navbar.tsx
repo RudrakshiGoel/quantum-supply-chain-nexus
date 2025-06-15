@@ -7,7 +7,7 @@ const navLinks = [
   { label: "Technology", to: "/technology" },
   { label: "Solutions", to: "/solutions" },
   { label: "Success Stories", to: "/success-stories" },
-  { label: "Blog", to: "#blog" },
+  { label: "Blog", to: "/blog" },
   { label: "Contact", to: "/contact" }
 ];
 
@@ -22,17 +22,15 @@ export default function Navbar() {
       <ul className="flex gap-8 font-sans text-sm">
         {navLinks.map(({ label, to }) => (
           <li key={label}>
-            {to.startsWith("#") ? (
-              <a href={to} className={cn(
+            <Link
+              to={to}
+              className={cn(
                 "uppercase px-2 py-1 rounded transition text-blue-200 hover:text-blue-400",
-                location.hash === to && "text-white bg-blue-900"
-              )}>{label}</a>
-            ): (
-              <Link to={to} className={cn(
-                  "uppercase px-2 py-1 rounded transition text-blue-200 hover:text-blue-400",
-                  location.pathname === to && "text-white bg-blue-900"
-              )}>{label}</Link>
-            )}
+                location.pathname === to && "text-white bg-blue-900"
+              )}
+            >
+              {label}
+            </Link>
           </li>
         ))}
         <li>

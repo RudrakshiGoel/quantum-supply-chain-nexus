@@ -1,4 +1,3 @@
-
 import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
 import FuturisticBackground from "@/components/FuturisticBackground";
@@ -21,7 +20,7 @@ export default function Index() {
             <NavTile icon={FileText} title="Technology" to="/technology" color="from-blue-700 via-blue-400 to-blue-700" />
             <NavTile icon={Search} title="Solutions" to="/solutions" color="from-indigo-600 via-purple-500 to-blue-900" />
             <NavTile icon={Users} title="Success Stories" to="/success-stories" color="from-green-700 via-blue-400 to-green-500" />
-            <NavTile icon={FileText} title="Blog" to="#blog" color="from-yellow-700 via-blue-400 to-blue-700" />
+            <NavTile icon={FileText} title="Blog" to="/blog" color="from-yellow-700 via-blue-400 to-blue-700" />
           </div>
         </section>
 
