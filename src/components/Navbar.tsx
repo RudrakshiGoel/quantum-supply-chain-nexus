@@ -1,9 +1,10 @@
+
 import { Link, useLocation } from "react-router-dom";
 import { Users, FileText, Search, Calendar, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom"; // Only import useNavigate here
 
 const navLinks = [
   { label: "Technology", to: "/technology" },
@@ -87,3 +88,4 @@ export default function Navbar() {
     </nav>
   );
 }
+
