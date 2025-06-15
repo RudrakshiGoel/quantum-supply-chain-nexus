@@ -1,16 +1,26 @@
-
 import Navbar from "@/components/Navbar";
 import FuturisticBackground from "@/components/FuturisticBackground";
 import Footer from "@/components/Footer";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function Contact() {
   const [success, setSuccess] = useState(false);
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (password !== "demo2025") {
+      setShowPassword(true);
+      return;
+    }
     setSuccess(true);
-    setTimeout(() => setSuccess(false), 5500);
+    setTimeout(() => {
+      setSuccess(false);
+      navigate("/confirmation");
+    }, 1200);
   }
 
   return (
@@ -27,6 +37,17 @@ export default function Contact() {
           <input required name="company" className="rounded px-4 py-3 bg-blue-900/70 border border-blue-600 text-white outline-none focus:ring-2 focus:ring-blue-300" placeholder="Company" />
           <input required name="email" type="email" className="rounded px-4 py-3 bg-blue-900/70 border border-blue-600 text-white outline-none focus:ring-2 focus:ring-blue-300" placeholder="Work Email" />
           <textarea required name="message" rows={5} className="rounded px-4 py-3 bg-blue-900/70 border border-blue-600 text-white outline-none focus:ring-2 focus:ring-blue-300" placeholder="Describe your needs or interests"></textarea>
+          <input
+            type="password"
+            required
+            className="rounded px-4 py-3 bg-blue-900/70 border border-blue-600 text-white outline-none focus:ring-2 focus:ring-blue-300"
+            placeholder="Enter access password"
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+          />
+          {showPassword && password !== "demo2025" && (
+            <div className="text-sm text-red-300 animate-fade-in">Incorrect password. Try <b>demo2025</b> for demo access.</div>
+          )}
           <button type="submit" className="bg-blue-700 px-7 py-3 rounded-full text-white shadow font-semibold hover:bg-blue-900 transition mt-1">
             Schedule a Demo
           </button>
@@ -44,7 +65,7 @@ export default function Contact() {
           </div>
           {success && (
             <div className="mt-4 py-3 px-6 rounded-xl bg-green-900/80 text-green-200 shadow animate-fade-in">
-              Thank you! Your request was received. We’ll reach out soon.
+              Thank you! Your request was received. Redirecting...
             </div>
           )}
         </div>
